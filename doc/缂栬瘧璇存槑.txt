@@ -1,0 +1,37 @@
+
+Copyright(c) 2019-2-2 Shangwen Wu
+
+embryo1.0可在linux大部分发行版上编译，目前作者的开发系统为RedHit6.5
+	
+（1）embryo1.0采用32位龙芯版gcc4.4-gnu编译器，需要首先安装编译器到/opt目录下，安装文件在龙芯开源社区下载即可，编译器安装命令如下：
+
+	tar xvf gcc-4.4-gnu.tar.gz -C /opt/
+
+（2）然后需要修改编译器路径，具体做法是修改config.mk文件中的CROSS_COMPILE变量为实际编译器所在路径：
+	
+	如编译器安装路径为/opt目录，则修改CROSS_COMPILE=/opt/gcc-4.4-gnu/bin/mipsel-linux-
+
+（3）修改目标CPU平台和架构，具体做法是修改config.mk文件中的ARCH和MACH变量，目前仅支持龙芯2H，因此这里使用默认值即可
+
+	ARCH=mips
+
+	MACH=ls2h
+
+（4）执行如下命令，开始进行编译：
+
+	make clean
+
+	make
+	
+
+
+
+
+
+
+
+
+
+
+
+

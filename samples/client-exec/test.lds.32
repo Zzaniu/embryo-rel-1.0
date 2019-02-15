@@ -1,0 +1,16 @@
+
+OUTPUT_FORMAT("elf32-tradlittlemips", "elf32-tradbigmips",
+           "elf32-tradlittlemips")
+OUTPUT_ARCH(mips)
+ENTRY(main)
+SECTIONS
+{
+	. = 0xffffffff80200000 ;
+
+	.text :
+	{
+		test.o(.text);
+		*.o(.text);
+	}	
+	.align = 4;
+}

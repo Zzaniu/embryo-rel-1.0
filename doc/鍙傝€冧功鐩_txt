@@ -1,0 +1,34 @@
+
+Copyright(c) 2019-2-13 Shangwen Wu
+
+下面是在编写代码过程参考的书籍，某些书可能并没用到，但是也推荐用来学习，下面的书我也才读了一部分，实在太多，而且过目即忘
+
+1.《TCP-IP详解卷1：协议》（注：特别推荐读下第二卷，主要讲BSD关于TCP/IP协议栈的代码实现）
+
+2.《radix-树路由表的设计原理》：某大牛对IP的路由radix树做的笔记
+
+3.《See Mips Run Linux》：学MIPS架构必读
+
+4.《内存的原理和时序（SDRAM、DDR、DDR-Ⅱ、Rambus DRAM）.pdf》：大牛对DDR基本概念以及时序做的通俗易懂的笔记，个人认为学习DDR时序最好的入门书，没有之一
+
+5.《JESD79-3C》：DDR3规范，这个啃起来就费劲了
+
+6.《Loongson2H_Processor_User_Manual_v1.4》《loongson2f-user-manual-chinese.》：关于龙芯2H的芯片手册，这里之所以把龙芯2F也列出来是因为2H手册中仅对集成的外设做了描述，而没对处理器核进行描述
+
+7.《龙芯CPU开发系统固件与内核接口详细规范V1R21》：提到了bootloader传给内核的环境参数数据结构
+
+8.《USB2.0协议中文版》《Open Universal Serial Bus Driver Interface (OpenUSBDI) Specification_1.0.pdf》：OHCI规范，本来是打算实现USB键盘用的
+
+9.《serial-ata-ahci-spec-rev1-3-1.pdf》《di529r14-ATAATAPI_Command_Set_-_4.pdf》：AHCI规范以及部分用到的SATA命令
+
+10.《PCIe体系结构导读》：介绍的PCIE总线的好书，只看了一部分，忘光了
+
+11.《ELF笔记》：比较详细的介绍了ELF可执行文件格式
+
+12.《ext2文件系统机制原理剖析》：某大牛对ext2文件系统做的笔记
+
+13.《PMON笔记》：“如果生命有终点，我就陪你到终点，如果生命没有终点，我就陪你到永远”，膜拜读完了PMON的大牛
+
+14.最后，还看过几个ZIP压缩算法的原理的笔记，不记得书名了，致敬ZIP之父——菲利普 W 卡兹
+
+

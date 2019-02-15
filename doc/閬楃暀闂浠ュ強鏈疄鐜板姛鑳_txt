@@ -1,0 +1,52 @@
+
+Copyright(c) 2019-2-2 Shangwen Wu
+	
+一、下面列出的问题在embryo1.0发布版中还没有找到彻底的解决办法
+
+1、embryo在初始化二级片上cache时的完成时间明显要比PMON慢1-2秒左右
+
+2、embryo对内存进行软件读写训练的时间要明显慢于PMON
+
+3、目前32位的embryo对long long整型数据处理存在问题，在代码中主要体现在以下两个方面：1）embryo的printf函数在使用%x打印long long型数据时，出现要打印的变量比实际打印的数据地址往后偏移了4字节长度的bug，理论上来说%x应该打印long long变量的低4字节，然而实际打印出来的值却是long long变量的低4字节还要往前的4字节位置的无效数据。2）当调用一个带有long long类型参数的函数时，如果传入的实际参数是一个32位类型的整数，那么在32位变量向64位变量的强制转换过程中会出现形式参数的高32位为无效数据的情况，如果在编写函数时需要对传入参数进行非零判断，而传入的值为0，而没有加ULL尾缀进行长整型申明时，由于高32位值不确定，很可能导致非零判断失效，从而产生与预期不一样的行为。目前推测该问题与32位ABI在64位机器上执行之间的兼容性有关
+
+4、在vsprintf函数中使用64位%和/运算时报以下错误:
+	/root/Desktop/work/embryo/embryo/lib/liblib.o: In function `llbtoa':
+	(.text+0x1554): undefined reference to `__umoddi3'
+	/root/Desktop/work/embryo/embryo/lib/liblib.o: In function `llbtoa':
+	(.text+0x1554): relocation truncated to fit: R_MIPS_26 against `__umoddi3'
+	/root/Desktop/work/embryo/embryo/lib/liblib.o: In function `llbtoa':
+	(.text+0x160c): undefined reference to `__udivdi3'
+	/root/Desktop/work/embryo/embryo/lib/liblib.o: In function `llbtoa':
+	(.text+0x160c): relocation truncated to fit: R_MIPS_26 against `__udivdi3'
+该错误原因出在embryo环境下不支持64位的除法和求模运算，因此编译器自动检测该问题并对"/"和"%"预算符进行重载，转而调用libc的__udivdi3和__moddi3函数，而该函数并未在embryo中实现，因此出先以上错误，在这里我通过采用Linux下的__div64_u32函数取代__divdi3函数回避了这一问题，但是为何pmon可以使用除法和取模运算符直接进行64位变量的计算而embryo却不能进行这一操作却并没有找到原因
+
+5、目前embryo的显示采用帧缓冲的方式，而没有使用显卡，当屏幕显示数据过多时，刷新一行数据会有明显的延迟。此外当刷新压力较大时，printf函数的\b回退符会出现明显的光标闪动
+
+6、目前embryo不支持非对齐访问，因此所有的非pack(0)结构体中如果存在地址与自身位宽没有对齐到一个边界的情况时，会导致指令执行出错
+
+7、stmmac驱动在进行tftp大数据量传输的时候偶尔出现检测不到接收完成中断状态的情况（表现就是tftp传输偶尔会卡住），而如果在检测传输状态函数或者传输过程的中某些特定位置加入少许延迟，反而传输正常，目前没有找到合适的解决方法
+
+8、网口需要up两次才能进行正常通信，调试发现stmmac驱动的DMA描述符在uncache与cache这两个内存空间中的某些数据不一致，然而代码上并无越界到此区域的情况，最后通过打开gcc编译的-O 2编译选项后此现象消失，目前具体原因不明
+
+
+二、下面列出功能的在embryo1.0发布版中还没有实现，这些功能会影响某些设备的正常使用
+
+1、目前embryo未实现RTC时间以及系统时间，超时机制或者poll/select多路转接IO等需要用到系统时间的功能暂时并未实现，目前，某些操作中用到超时的地方现用死循环代替，导致某些未达到条件的操作在死循环中出不来，比如ping一个未联通的地址或tftp服务端未响应等情况发生时，程序将卡死，只能重启才能继续使用。要避免上述的问题，需要完成系统时间模块以及进程调度模块、signal系统调用模块的设计
+
+2、ifconfig命令对一个已经配置了地址的网卡进行down操作时没有实现IP层radix路由树的节点删除操作，因此，在反复对同一个网卡进行配置地址/down操作的情况下，将会引起错误（一般是内存泄漏）
+
+3、未实现IP报文的分包机制以及不支持多播功能，接收需要拆包的大数据报文将引起错误
+
+4、ping命令实现不完整，仅是一个最基本的ping演示程序
+
+5、未实现自解压功能，当编译后的embryo镜像文件大于1MB时将无法使用
+
+6、未实现内存参数在线调试功能，要修改参数只能修改源文件后更新程序
+
+7、目前仅支持ext2/ext3文件系统类型
+
+8、不支持内核自动引导
+
+9、目前不支持内存训练后的参数保存，因此，每次上电时都需要进行漫长的内存参数训练过程，这会花费大量的启动时间
+
+

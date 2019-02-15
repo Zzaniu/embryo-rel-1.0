@@ -1,0 +1,103 @@
+
+Copyright(c) 2019-2-12 Shangwen Wu	
+
+embryo没有自己的配置工具，因此，系统参数需要通过修改源文件中的某些宏定义或者变量来实现不同的使用场景
+
+
+1、CPU平台配置（autocnf.h）
+
+
+CPUFREQ：用于配置CPU主频，单位为MHz
+
+DDRFREQ：用于配置DDR主频，单位为MHz
+
+FPU_ENABLE：是否打开CPU的浮点处理器
+
+
+2、显示配置（autocnf.h）
+
+USE_DC_VGA：使用2H的VGA还是DV0作为显示输出
+
+用于选择显示分辨率的宏定义：
+VIDEO_640X480
+VIDEO_640X640		
+VIDEO_640X768		
+VIDEO_640X800		
+VIDEO_800X480		
+VIDEO_800X600		
+VIDEO_800X640		
+VIDEO_832X600		
+VIDEO_832X608		
+VIDEO_1024X480
+VIDEO_1024X600
+VIDEO_1024X640
+VIDEO_1024X768
+VIDEO_1152X764
+VIDEO_1280X800
+VIDEO_1280X1024
+VIDEO_1440X800
+VIDEO_1440X900
+
+用于选择显示色深的宏定义：
+VIDEO_1BPP
+VIDEO_2BPP
+VIDEO_4BPP
+VIDEO_8BPP				/* RGB332 */ 
+VIDEO_15BPP				/* RGB555 */ 
+VIDEO_16BPP				/* RGB565 */ 
+VIDEO_24BPP				/* RGB888 */ 
+VIDEO_32BPP
+
+用于配置背景色与前景色，这两个配置与显示色深相关，其值为对应色深下的RGB三色值：
+FB_CONSOLE_BG			
+FB_CONSOLE_FG			
+
+
+3、设备树配置
+
+embryo不支持配置设备树，而只能通过修改ioconf.c中的代码来构建设备树，错误的修改此文件会导致各种各样的问题，因为编译过程不对设备树做语法语义检查
+
+添加一个自己的设备需要向cfdatas中添加一个描述设备与驱动之间关系的数据结构，该结构描述如下：
+
+struct cfdata {
+	struct cfattach	*cf_attach;	//将设备挂接到驱动时所做的初始化工作，类似于linux的驱动probe函数
+	struct cfdriver *cf_driver;	//对设备驱动的描述，所做的事情其实相当有限，仅提供了一个驱动与设备直接绑定关系的描述
+	short cf_stat;			//描述设备的状态和类型
+	short cf_parent;		//指向父设备在cfdatas数组中的索引
+	unsigned short cf_unit;		//当cf_stat类型为dynamic设备时，表示探测到的设备最大设备号
+	uint32_t *cf_iobase;		//指向设备IO地址的指针
+};
+
+为了构建该结构体，还需要准备cfattach与cfdriver两个结构才能将驱动真正挂接到设备树中，其中cfattach将给出挂接的具体行为。cf_parent指向其父设备在cfdatas中的数组索引。cf_stat用于表示当前设备的类型，CFSTAT_STATIC表示为某些逻辑设备或者集成在CPU平台内部的设备，这些设备是固定不变的、与平台相关的外设；CFSTAT_DYNAMIC一般用于某些总线下动态挂接的子设备，比如各种pci接口、ahci结构的子设备等，这些设备大多与具体平台无关。此外，对于每个设备而言，可能还需要提供一个设备寄存器的访问基地址，这也是与平台紧密相关的。
+
+还有两个设备值得注意，一个是虚拟设备还有一个是根设备，根设备是指设备的树的第一个节点，单并不真正作为cfdatas的一个元素，而是在configure设备配置过程中作为遍历设备树的起点；另一个虚拟设备主要用于网络协议栈的回环接口（该设备放在这里其实显得很突兀）
+
+
+4、运行环境配置（autocnf.h）
+
+BIOS_CONSOLE_UART：用于选择embryo的调试串口
+
+BIOS_CONSOLE_BAUDRATE：设置调试串口波特率
+
+BIOS_I2C_CONTROLLER：用于选择哪一路I2C作为内存条SBD信息访问通道
+
+POWERON_SELF_TEST：是否在运行过程中自动探测CPU的主频精确值以及显示部分上电自检信息
+
+OUTPUT_TO_BOTH：是否将标准输出同时定位到显示器和调试串口上
+
+USE_SHELL_CONSOLE：是否使用带有历史命令记录功能的命令行
+
+
+5、其他配置（autocnf.h）
+
+UART_SPLIT_ENABLE：是否关闭UART0的全功能
+
+SOFT_64BIT_DIV_MOD：是否启用软件模拟的64位除法和模运算
+
+FIX_HEAP_SPACE：是否指定内存分配函数malloc使用的堆空间 
+
+HEAP_BASE： malloc使用的堆起始地址，当FIX_HEAP_SPACE为1时有效 
+
+HEAP_SIZE：malloc使用的堆大小，当FIX_HEAP_SPACE为1时有效 
+
+

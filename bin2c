@@ -1,0 +1,32 @@
+#!/usr/bin/perl
+
+use warnings;
+use strict;
+
+if(@ARGV < 3) {
+	die "Argument invalied!\n";
+}
+
+if(!open BINFILE, "<$ARGV[0]") {
+	die "Open bin file failed, $!\!\n";
+}
+
+open CFILE, ">$ARGV[1]"; 
+
+printf CFILE "static unsigned char $ARGV[2]\[] = {\n";
+
+my ($i, $c, $x);
+
+$i = 0;
+
+while(!eof(BINFILE)) {
+	printf CFILE ("/* 0x%08x */", $i) if($i % 16 == 0);
+	read BINFILE, $x, 1; 
+	$c = unpack "C", $x;
+	printf CFILE "0x%02x, ", $c;
+	++$i;
+	printf CFILE ("\n") if($i % 16 == 0);
+}
+
+printf CFILE "};\n";
+
